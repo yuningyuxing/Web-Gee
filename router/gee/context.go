@@ -6,18 +6,22 @@ import (
 	"net/http"
 )
 
-// 便于进行处理请求和构造响应
 type H map[string]interface{}
 
-// 定义一个请求上下文结构体
-// 本结构体包含了请求和响应相关的信息
+// 给Context对象新增一个属性和方法 从而提供对路由参数的访问
 type Context struct {
-	//包含Writer和Req两个原始的HTTP对象
-	Writer     http.ResponseWriter //ResponseWriter是一个接口 用于向客户端发送HTTP响应
-	Req        *http.Request       //Request 是一个结构体类型 代表一个客户端的HTTP请求
-	Path       string              //请求路径
-	Method     string              //请求方式  列如GET POST PUT DELETE
-	StatusCode int                 //响应状态码
+	Writer     http.ResponseWriter
+	Req        *http.Request
+	Path       string
+	Method     string
+	Params     map[string]string
+	StatusCode int
+}
+
+// 新增方法 用于获取解析的参数
+func (c *Context) Param(key string) string {
+	value, _ := c.Params[key]
+	return value
 }
 
 // 初始化上下文结构体
