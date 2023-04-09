@@ -3,6 +3,7 @@ package gee
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 type HandlerFunc func(*Context)
@@ -68,7 +69,24 @@ func (engine *Engine) Run(addr string) (err error) {
 	return http.ListenAndServe(addr, engine)
 }
 
+// 将中间件加入到改group组
+func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
+	group.middlewares = append(group.middlewares, middlewares...)
+}
+
+// 修改过后的ServerHTTP会先获取该请求要用到的中间件
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var middlewares []HandlerFunc
+	//遍历所有group组
+	for _, group := range engine.groups {
+		//当我们的请求和该组group有相同前缀的时候 表示该请求要应用这个group的中间组
+		if strings.HasPrefix(req.URL.Path, group.prefix) {
+			//获得group的中间组
+			middlewares = append(middlewares, group.middlewares...)
+		}
+	}
 	c := newContext(w, req)
+	//存储最c.handlers里面
+	c.handlers = middlewares
 	engine.router.handle(c)
 }

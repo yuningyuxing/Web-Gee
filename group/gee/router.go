@@ -106,8 +106,14 @@ func (r *router) handle(c *Context) {
 		c.Params = params
 		//注意这里的n.是匹配路径 而非真实路径
 		key := c.Method + "-" + n.pattern
-		r.handlers[key](c)
+		//将该请求路径的handler也加入中间件
+		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
-		c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		//匹配失败 也要将失败打印函数放到中间件里面去
+		c.handlers = append(c.handlers, func(c *Context) {
+			c.String(http.StatusNotFound, "404 NOT FOUND: %s\n", c.Path)
+		})
 	}
+	//开始执行中间件
+	c.Next()
 }

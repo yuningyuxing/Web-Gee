@@ -16,6 +16,27 @@ type Context struct {
 	Method     string
 	Params     map[string]string
 	StatusCode int
+	//新增 中间件组
+	handlers []HandlerFunc
+	//新增中间件计数
+	index int
+}
+
+// 当在中间件中调用next方法时候 控制权交给下一个中间件
+// 直到调用最后一个中间件然后再从后往前 调用每个中间件的next后的部分
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	//按顺序依次执行该context的中间件
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+func (c *Context) Fail(code int, err string) {
+	//这里会导致直接跳过handler
+	c.index = len(c.handlers)
+	//并调用JSON返回一个错误
+	c.JSON(code, H{"message": err})
 }
 
 // 新增方法 用于获取解析的参数
@@ -31,6 +52,7 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
 	}
 }
 
