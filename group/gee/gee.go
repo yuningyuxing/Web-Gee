@@ -25,8 +25,11 @@ type (
 
 // Engine的构造函数
 func New() *Engine {
+	//先构造一个自己
 	engine := &Engine{router: newRouter()}
+	//注意这个是创建根路由组  且我们所有路由组共享一个engine
 	engine.RouterGroup = &RouterGroup{engine: engine}
+	//将根路由组加入到路由组中
 	engine.groups = []*RouterGroup{engine.RouterGroup}
 	return engine
 }
@@ -46,6 +49,7 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup {
 	return newGroup
 }
 
+// comp是路径
 func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
 	pattern := group.prefix + comp
 	log.Printf("Route %4s - %s", method, pattern)

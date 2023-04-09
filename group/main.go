@@ -7,10 +7,11 @@ import (
 
 func main() {
 	r := gee.New()
+	//原始方法可以addroute
 	r.GET("/index", func(c *gee.Context) {
 		c.HTML(http.StatusOK, "<h1>Index Page</h1>")
 	})
-
+	//我们用engine中的Group获得一个子路由组  也可以用来addroute 效果和上面一样  但注意下面在注册的时候会加上Group组的前缀 用谁就加谁的
 	v1 := r.Group("/v1")
 	v1.GET("/", func(c *gee.Context) {
 		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
