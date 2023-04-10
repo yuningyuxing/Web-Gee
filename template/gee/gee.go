@@ -43,6 +43,13 @@ func New() *Engine {
 	return engine
 }
 
+// 用来测试错误处理机制的
+func Default() *Engine {
+	engine := New()
+	engine.Use(Logger(), Recovery())
+	return engine
+}
+
 // 用于创建一个新的路由组 可以理解为生儿子
 // 注意所有路由组公用一个Engine实例
 // prefix表示新建的RouterGroup的路由前缀
